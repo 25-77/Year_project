@@ -1,3 +1,11 @@
+# Исключения пользователя
+catboost_info/
+data/**/*.pqt
+data/**/*.parquet
+data/**/*.csv
+data/**/*.xlsx
+
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -8,6 +16,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+venv/
 .venv
 build/
 develop-eggs/
