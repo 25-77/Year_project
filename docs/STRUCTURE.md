@@ -2,7 +2,7 @@
 
 ```bash
 .
-├── config              # Конфигурационные файлы   
+├── config              # Конфигурационные файлы
 ├── data                # Данные
 │   ├── preprocessed
 │   └── raw
@@ -10,7 +10,7 @@
 ├── docs                # Документация проекта
 │   ├── DEVELOPMENT.md
 │   ├── POETRY.md
-│   └── STRUCTURE.md               
+│   └── STRUCTURE.md
 ├── notebooks           # Jupyter notebooks
 │   └── 1. EDA.ipynb    # Разведочный анализ данных
 ├── reports             # Отчеты

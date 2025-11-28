@@ -9,7 +9,7 @@ def cramers_v_matrix(data, cat_columns):
     """
     n = len(cat_columns)
     corr_matrix = pd.DataFrame(np.eye(n), index=cat_columns, columns=cat_columns)
-    
+
     for i, col1 in enumerate(cat_columns):
         for j, col2 in enumerate(cat_columns[i+1:], i+1):
             # Фильтруем NaN и вычисляем Cramers V
@@ -19,10 +19,10 @@ def cramers_v_matrix(data, cat_columns):
                 chi2 = chi2_contingency(table)[0]
                 n_obs = table.sum().sum()
                 corr_val = np.sqrt(chi2 / (n_obs * (min(table.shape) - 1)))
-                
+
                 corr_matrix.iloc[i, j] = corr_val
                 corr_matrix.iloc[j, i] = corr_val
-    
+
     return corr_matrix
 
 
@@ -63,7 +63,7 @@ def get_vars_statistics(data: pd.DataFrame, columns, percentilies_list=None, sho
     result = data[columns].describe(include='all', percentiles=percentilies).T
     result.rename(columns={
         '50%': '50% (median)'}, inplace=True)
-    
+
     attributes = pd.DataFrame()
     attributes['attribute'] = columns
     cm = data[columns].isna().sum(axis=0)

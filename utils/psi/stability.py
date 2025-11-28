@@ -170,7 +170,7 @@ class StabilityIndexCalculator:
 			if verbose:
 				print(f"Calculating {_var}")
 
-			_fit_s = self._fit_calc_routine(df, fit, fit_mask, _var, group_col, expected_len, n_bins, variable_n_bins, 
+			_fit_s = self._fit_calc_routine(df, fit, fit_mask, _var, group_col, expected_len, n_bins, variable_n_bins,
 					from_sql, distrib_targ, exclude_miss, exclude_out_int, bin_edge_std, variable_bins)
 
 			# check if fit were successfull
@@ -202,13 +202,13 @@ class StabilityIndexCalculator:
 
 		return group_col_counts
 
-	def _fit_calc_routine(self, df, fit, fit_mask, _var, group_col, expected_len, n_bins, variable_n_bins, 
+	def _fit_calc_routine(self, df, fit, fit_mask, _var, group_col, expected_len, n_bins, variable_n_bins,
 			from_sql, distrib_targ, exclude_miss, exclude_out_int, bin_edge_std, variable_bins):
 		if from_sql is not None:
 			sql_table = from_sql["sql_table"]
 			connection = from_sql["connection"]
-			var_script = f"""SELECT {_var}, {group_col} 
-						FROM {sql_table} 
+			var_script = f"""SELECT {_var}, {group_col}
+						FROM {sql_table}
 						"""
 			df = pd.read_sql(var_script, con=connection)
 
@@ -654,7 +654,7 @@ class StabilityIndexCalculator:
 				~bin_res.index.get_level_values(0).isin(drop_vars)
 			]  # drop vars
 			result_dfs["psi_bin_counts"] = bin_res
-	
+
 		if filepath is not None:
 			with pd.ExcelWriter(filepath, mode="w") as writer:
 				for sheet_name, stat in result_dfs.items():
@@ -805,7 +805,7 @@ class StabilityIndexCalculator:
 
 			psi_tab[self.psi_str] = (var_obs - var_exp) * np.log(var_obs / var_exp)
 			# weight by segment size
-			
+
 			weight = (base_counts / base_counts.sum()) * (psi_tab[self.psi_str] > 0).sum()
 			psi_tab[self.psi_str] = psi_tab[self.psi_str] * weight
 		else:  # standard psi
@@ -908,7 +908,7 @@ class StabilityIndexCalculator:
 			val = round(val, max(symbols - nd, 0))
 
 		return str(val)
-	
+
 
 	# @staticmethod
 	def filter_psi_conditions(self, psi_res, single_thresh, n_bad_thresh=(3, 0.3), mean_bad_thresh=(5, 0.2)):
@@ -916,7 +916,7 @@ class StabilityIndexCalculator:
 		Parameters
 		--------------
 		psi_res: StabilityIndexCalculator result
-		single_thresh: float. 
+		single_thresh: float.
 			Single period filter threshold
 		n_bad_thresh: tuple. (int, float)
 			N highest psi periods to check. If all higher then thresh -> filter.
@@ -924,10 +924,10 @@ class StabilityIndexCalculator:
 			If mean PSI higher then thresh in N highest PSI periods -> filter.
 		"""
 		filter_cols = []
-		
+
 		for name, psi_tab in psi_res.items():
 			psi = psi_tab['psi'].sort_values(ascending=False)
-			
+
 			if psi.iloc[0] > single_thresh:
 				filter_cols.append(name)
 			elif (psi.iloc[0: n_bad_thresh[0]] > n_bad_thresh[1]).all():
@@ -935,8 +935,8 @@ class StabilityIndexCalculator:
 			elif psi.iloc[0: mean_bad_thresh[0]].mean() > mean_bad_thresh[1]:
 				filter_cols.append(name)
 			else:
-				pass 
-			
+				pass
+
 		return filter_cols
 
 
@@ -1010,10 +1010,10 @@ def initiate_bins(q, var_cnt_csum, var_unique, expected_len):
 							_val_insert = _il + _idx
 						else:
 							_val_insert = _il + _idx + 1
-					break	
+					break
 			# print(_idx_insert, _val_insert, var_unique[_val_insert])
 			added_bins = np.insert(added_bins, _idx_insert, _val_insert)
-			
+
 		bins_cs_idxs = np.array(added_bins)
 	else:
 		bins_cs_idxs = np.array(bins_cs_idxs)
@@ -1101,10 +1101,10 @@ def psi_plot(psi_res: dict, n_cols=5, figsize=(24, 4), save_path=None):
     for idx, (_name, psi_tab) in enumerate(psi_res.items()):
         if idx >= len(axes):  # На случай, если графиков больше, чем ячеек
             break
-            
+
         ax = axes[idx]
         ax2 = ax.twinx()
-        
+
         _psi_tab = psi_tab.copy()
         _psi_tab.index = _psi_tab.index.astype(str)
 

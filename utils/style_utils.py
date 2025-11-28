@@ -20,7 +20,7 @@ def print_multiple_html(*text_pairs, px_margin=1.4):
     for base, highlighted in text_pairs:
         html_pairs.append(
             f"""<div style='margin-bottom: {px_margin}px;'>
-                <b style='white-space: pre;'>{base}</b> 
+                <b style='white-space: pre;'>{base}</b>
                 <b style='color:orange;'>{highlighted}</b>
             </div>""")
 

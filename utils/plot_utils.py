@@ -8,14 +8,14 @@ from sklearn.metrics import roc_curve, auc
 def time_ranges_plot(datas_dict, date_column, save_path=None):
     """
     Функция для построения графика временных диапазонов.
-    
+
     Parameters:
     ----------
     datas_dict : dict
         Словарь, где ключи - названия датасетов, значения - датафреймы с колонкой date_column.
     date_column : str
         Название колонки с датами в формате 'YYYYMM'.
-        
+
     """
     plt.figure(figsize=(16, 1))
 
@@ -26,7 +26,7 @@ def time_ranges_plot(datas_dict, date_column, save_path=None):
             plt.plot(months, [data for x in months], lw=5)
         else:
             plt.scatter(months, [data for x in months], linewidths=5, marker='_')
-    
+
     plt.xticks(rotation=90)
     plt.tick_params(labelsize=14, axis='y')
     plt.title('Рассматриваемые временные диапазоны:', fontdict={'fontsize':15})
