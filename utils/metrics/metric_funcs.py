@@ -25,10 +25,10 @@ def mean_absolute_percentage_error(y_true, y_pred, sample_weight=None):
 #         BinCLS = optbinning.OptimalBinning
 #     else:
 #         raise ValueError(f"bintype must be in (continuous, binary). {bintype} is not supported")
-    
+
 #     var = 'y_pred'
 #     df = pd.DataFrame(np.c_[y_true, y_pred], columns=['y_true', 'y_pred'])
-    
+
 #     dtype = 'numerical' if is_numeric_dtype(df[var]) else 'categorical'
 
 #     try:
@@ -36,11 +36,11 @@ def mean_absolute_percentage_error(y_true, y_pred, sample_weight=None):
 #         optb.fit(df[var], df['y_true'])
 #         optb.binning_table.build()
 #         iv = optb.binning_table.iv
-        
+
 #     except BaseException as error:
 #         print(f"Error on optimal binning: {error}")
 #         return np.nan
-        
+
 #     return iv
 
 
@@ -72,7 +72,7 @@ def spearman_corr(y_true, y_pred):
 
 def root_mse(y_true, y_pred):
     """Root MSE"""
-    return mean_squared_error(y_true, y_pred) 
+    return mean_squared_error(y_true, y_pred)
 
 
 def gini_score(y_true, y_pred):
@@ -105,4 +105,3 @@ def gini_score_nan(y_true, y_pred):
     """
     roc_auc = roc_auc_score_nan(y_true, y_pred)
     return roc_auc * 2 - 1
-    
