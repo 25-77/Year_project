@@ -1,5 +1,6 @@
 from sklearn.metrics import confusion_matrix, mean_squared_error
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_score, recall_score
 # from sklearn.preprocessing import LabelEncoder
 # import optbinning
 from pandas.api.types import is_numeric_dtype
@@ -105,3 +106,11 @@ def gini_score_nan(y_true, y_pred):
     """
     roc_auc = roc_auc_score_nan(y_true, y_pred)
     return roc_auc * 2 - 1
+
+def precision(y_true, y_pred, threshold=0.5):
+    y_pred = (y_pred >= threshold).astype(int)
+    return precision_score(y_true, y_pred)
+
+def recall(y_true, y_pred, threshold=0.5):
+    y_pred = (y_pred >= threshold).astype(int)
+    return recall_score(y_true, y_pred)
