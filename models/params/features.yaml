@@ -1,10 +1,10 @@
 FINAL_CAT_FEATURES:
 - P_emaildomain
-- M5
-- R_emaildomain
 - card4
 - card6
+- R_emaildomain
 - M4
+- M5
 - DeviceInfo
 FINAL_FEATURES:
 - C13
