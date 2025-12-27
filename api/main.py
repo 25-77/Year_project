@@ -43,10 +43,9 @@ app.add_middleware(PredictionHistoryMiddleware)
 async def root():
     """
     Корневой эндпоинт - базовый GET запрос
-    Возвращает приветственное сообщение и информацию о доступных эндпоинтах
     """
     return {
-        "message": "ML Prediction Serviceg",
+        "message": "ML Prediction Service",
         "version": "1.0.0",
         "endpoints": {
             "prediction": {
@@ -54,10 +53,15 @@ async def root():
                 "path": "/api/forward",
                 "description": "Получить предсказание модели"
             },
-            "history": {
+            "history_all": {
                 "method": "GET",
                 "path": "/api/history",
                 "description": "Получить историю всех запросов"
+            },
+            "history_stats": {
+                "method": "GET",
+                "path": "/api/history/stats",
+                "description": "Получить статистику по истории запросов"
             },
             "health": {
                 "method": "GET",
@@ -76,12 +80,10 @@ async def root():
 async def health_check():
     """
     Эндпоинт проверки здоровья приложения
-    Используется для проверки работоспособности API
     """
     return {
         "status": "healthy",
-        "service": "ml-prediction-service",
-        "features": ["prediction", "history", "health_check"]
+        "service": "ml-prediction-service"
     }
 
 

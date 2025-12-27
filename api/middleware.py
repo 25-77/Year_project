@@ -1,14 +1,12 @@
-# Middleware для логирования запросов предсказаний
+# Middleware для логирования истории предсказаний
+
 # Этот middleware перехватывает все POST запросы к /api/forward
-# и логирует их в базу данных
+# и сохраняет их вместе с результатами в базу данных
 
 import time
 import json
-from typing import Dict, Any
-from datetime import datetime
-from fastapi import Request, Response
+from fastapi import Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
 
 from .database import AsyncSessionLocal
 from .models import PredictionHistory
@@ -20,10 +18,10 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
     Логирует каждый POST запрос к эндпоинту /api/forward
     """
 
-    def __init__(self, app: ASGIApp):
+    def __init__(self, app):
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(self, request, call_next):
         """
          Обработать каждый запрос
 
@@ -42,9 +40,6 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
         # Записать время начала
         start_time = time.time()
 
-        # Получить IP клиента
-        client_ip = request.client.host if request.client else "unknown"
-
         # Прочитать тело запроса
         body_bytes = await request.body()
 
@@ -52,7 +47,7 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
         request._body = body_bytes
 
         # Разобрать данные запроса
-        request_data: Dict[str, Any] = {}
+        request_data = {}
         if body_bytes:
             try:
                 request_data = json.loads(body_bytes.decode("utf-8"))
@@ -64,11 +59,6 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
 
         # Рассчитать время обработки
         processing_time = time.time() - start_time
-
-        # Разобрать данные ответа
-        prediction = None
-        probability = None
-        error_message = None
 
         # Получить тело ответа
         response_body = b""
@@ -83,34 +73,17 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
             media_type=response.media_type
         )
 
-        # Разобрать ответ если успешно
-        if response.status_code == 200:
-            try:
-                result = json.loads(response_body.decode("utf-8"))
-                prediction = result.get("prediction")
-                probability = result.get("probability")
-            except (json.JSONDecodeError, KeyError):
-                error_message = "Failed to parse successful response"
-        else:
-            # Разобрать сообщение об ошибке
-            try:
-                error_result = json.loads(response_body.decode("utf-8"))
-                error_message = error_result.get("detail", str(error_result))
-            except json.JSONDecodeError:
-                error_message = f"HTTP {response.status_code}"
+        result = json.loads(response_body.decode("utf-8"))
+        prediction = result.get("prediction")
+        probability = result.get("probability")
 
         # Сохранить в базу данных
         async with AsyncSessionLocal() as session:
             try:
                 history_item = PredictionHistory(
-                    timestamp=datetime.utcnow(),
                     request_data=request_data,
                     prediction=prediction,
                     probability=probability,
-                    status_code=response.status_code,
-                    error_message=error_message,
-                    client_ip=client_ip,
-                    model_version="1.0.0",
                     processing_time=processing_time
                 )
 
@@ -118,7 +91,6 @@ class PredictionHistoryMiddleware(BaseHTTPMiddleware):
                 await session.commit()
 
             except Exception as e:
-                # Залогировать ошибку, но не проваливать запрос
                 print(f"Error saving prediction history: {e}")
                 await session.rollback()
 

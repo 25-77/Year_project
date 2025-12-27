@@ -6,25 +6,19 @@
 # - GET /history/stats - Получить статистику
 
 
-from datetime import datetime, timedelta
-from typing import Optional
-from sqlalchemy import select, func, desc, and_
+from typing import List
+from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..database import get_db, get_history_count
+from ..database import get_db
 from ..models import PredictionHistory
-from ..schemas import (
-    HistoryResponse,
-    HistoryItemResponse,
-    HistoryStatsResponse
-)
+from ..schemas import HistoryItemResponse, HistoryStatsResponse
 
 router = APIRouter(
     prefix="/history",
     tags=["History"],
     responses={
-        404: {"description": "Не найдено"},
         500: {"description": "Внутренняя ошибка сервера"}
     }
 )
@@ -32,152 +26,76 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=HistoryResponse,
-    summary="Get prediction history",
+    response_model=List[HistoryItemResponse],
+    summary="История запросов",
     description="""
-    Получить постраничный список всех запросов предсказаний.
-    Параметры:
-    - page: Номер страницы (начинается с 1)
-    - limit: Элементов на страницу (1-100)
-    - status_code: Фильтр по статус коду
-    - start_date: Фильтр от даты
-    - end_date: Фильтр до даты
+    Возвращает список всех запросов
     """
 )
 async def get_history(
-    page: int = Query(1, ge=1, description="Номер страницы"),
-    limit: int = Query(10, ge=1, le=100, description="Элементов на страницу"),
-    status_code: Optional[int] = Query(None, description="Фильтр по статус коду"),
-    start_date: Optional[datetime] = Query(None, description="Начальная дата (UTC)"),
-    end_date: Optional[datetime] = Query(None, description="Конечная дата (UTC)"),
     db: AsyncSession = Depends(get_db)
-) -> HistoryResponse:
-    """
-    Получить постраничную историю предсказаний
-
-    Паттерн SQLAlchemy 2.0:
-    - Использовать execute() с select()
-    - Использовать .scalars().all() для получения списка объектов
-    """
-
+) -> List[HistoryItemResponse]:
     try:
-        # Построить базовый запрос
-        query = select(PredictionHistory)
-
-        # Применить фильтры
-        if status_code is not None:
-            query = query.where(PredictionHistory.status_code == status_code)
-
-        if start_date is not None:
-            query = query.where(PredictionHistory.timestamp >= start_date)
-
-        if end_date is not None:
-            query = query.where(PredictionHistory.timestamp <= end_date)
-
-        # Получить общее количество
-        total = await get_history_count(db)
-
-        # Применить пагинацию и сортировку
-        query = query.order_by(desc(PredictionHistory.timestamp))
-        query = query.offset((page - 1) * limit).limit(limit)
+        # Построить простой запрос - все записи отсортированные по дате
+        query = select(PredictionHistory).order_by(desc(PredictionHistory.id))
 
         # Выполнить запрос
         result = await db.execute(query)
         history_items = result.scalars().all()
 
-        # Рассчитать общее количество страниц
-        total_pages = (total + limit - 1) // limit if total > 0 else 0
-
-        return HistoryResponse(
-            items=list(history_items),
-            total=total,
-            page=page,
-            limit=limit,
-            total_pages=total_pages
-        )
+        return list(history_items)
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching history: {str(e)}"
+            detail=f"Ошибка при получении истории: {str(e)}"
         )
 
 
 @router.get(
-    "/stats",
+    "/stats", 
     response_model=HistoryStatsResponse,
-    summary="Get prediction statistics",
+    summary="Статистика запросов",
     description="""
-    Получить статистику о запросах предсказаний.
+    Возвращает основные статистики по запросам
 
-    Возвращает:
-    - Всего запросов
-    - Успешных запросов
-    - Неудачных запросов
-    - Уровень успеха
-    - Среднее время обработки
-    - Запросы за последние 24 часа
-    """
-)
-async def get_history_stats(
-    db: AsyncSession = Depends(get_db)
-) -> HistoryStatsResponse:
-    """
-    Получить статистику предсказаний
-
-    Паттерн SQLAlchemy 2.0 с агрегатными функциями:
-    - Использовать func.count(), func.avg() для агрегации
-    """
-
+    Статистики: 
+        - Кол-во запросов
+        - Средний прогноз
+        - Среднее время обработки запросов
+    """)
+async def get_history_stats(db: AsyncSession = Depends(get_db)):
     try:
-        # Получить текущее время
-        now = datetime.utcnow()
-        last_24_hours = now - timedelta(hours=24)
-
-        #  Получить общее количество
-        total_result = await db.execute(
-            select(func.count(PredictionHistory.id))
-        )
+        # Общее количество
+        total_result = await db.execute(select(func.count(PredictionHistory.id)))
         total = total_result.scalar_one()
-
-        # Получить количество успешных
-        successful_result = await db.execute(
-            select(func.count(PredictionHistory.id))
-            .where(PredictionHistory.status_code == 200)
+        
+        # Среднее предсказание
+        avg_pred_result = await db.execute(
+            select(func.avg(PredictionHistory.prediction))
+            .where(PredictionHistory.prediction.isnot(None))
         )
-        successful = successful_result.scalar_one()
-
-        # Получить количество неудачных
-        failed = total - successful
-
-        # Получить среднее время обработки
+        avg_prediction = avg_pred_result.scalar_one()
+        
+        # Средняя вероятность
+        avg_prob_result = await db.execute(
+            select(func.avg(PredictionHistory.probability))
+            .where(PredictionHistory.probability.isnot(None))
+        )
+        avg_probability = avg_prob_result.scalar_one()
+        
+        # Среднее время обработки
         avg_time_result = await db.execute(
             select(func.avg(PredictionHistory.processing_time))
             .where(PredictionHistory.processing_time.isnot(None))
         )
         avg_processing_time = avg_time_result.scalar_one()
-
-        # Получить количество за последние 24 часа
-        last_24h_result = await db.execute(
-            select(func.count(PredictionHistory.id))
-            .where(PredictionHistory.timestamp >= last_24_hours)
-        )
-        last_24h = last_24h_result.scalar_one()
-
-        # Рассчитать уровень успеха
-        success_rate = successful / total if total > 0 else 0.0
-
+        
         return HistoryStatsResponse(
             total_requests=total,
-            successful_requests=successful,
-            failed_requests=failed,
-            success_rate=success_rate,
-            average_processing_time=float(avg_processing_time) if avg_processing_time else None,
-            last_24_hours=last_24h
+            average_prediction=float(avg_prediction),
+            average_probability=float(avg_probability),
+            average_processing_time=float(avg_processing_time)
         )
-
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching statistics: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))

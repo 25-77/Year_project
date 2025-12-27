@@ -2,11 +2,11 @@
 
 ```bash
 .
-├── api                             # Основная директория API
+├── api                             # Fast API
 │   ├── main.py                     # Точка входа в приложение FastAPI
 │   ├── database.py                 # Настройки и подключение к базе данных
 │   ├── dependencies.py             # Зависимости для загрузки моделей и переменных
-│   ├── middleware.py               # middleware для логирования запросов
+│   ├── middleware.py               # Middleware для логирования запросов
 │   ├── models.py                   # SQLAlchemy модели базы данных
 │   ├── schemas.py                  # Pydantic схемы для валидации данных
 │   └── routers/                    # Маршрутизаторы API

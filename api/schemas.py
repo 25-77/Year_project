@@ -1,97 +1,106 @@
-# Pydantic схемы
+# Pydantic схемы для валидации API запросов и ответов
 
-from datetime import datetime
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, ConfigDict
+# Этот файл определяет структуру данных для:
+# 1. Входящих запросов к API
+# 2. Исходящих ответов от API
+
+# Основные принципы:
+# - Каждый эндпоинт имеет свою схему запроса и ответа
+# - Все схемы наследуются от BaseModel
+# - Field() используется для добавления метаданных и валидации
+# - ConfigDict настраивает поведение Pydantic
+
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ForwardRequest(BaseModel):
-    """Запрос для предсказания"""
+    """
+    Схема для запроса данных для прогноза
+
+    Используется: POST /api/forward
+    Проверяет что в запросе есть поле 'data' типа словарь
+    """
     data: Dict[str, Any] = Field(
         ...,
-        description="Объект с переменными для предсказания"
+        description="JSON объект с переменными для предсказания модели",
+        examples=[
+            {
+                "TransactionAmt": 189.0,
+                "C1": 1.0,
+                "C2": 2.0,
+                "C4": 1.0,
+                "C6": 0.5,
+                "C11": 0.0,
+                "C13": 1.0,
+                "C14": 1.0,
+                "D2": 10.0,
+                "D3": 5.0,
+                "D8": 2.0,
+                "V34": 0.1,
+                "V57": 0.2,
+                "V91": 0.3,
+                "V200": 0.4,
+                "V281": 0.5,
+                "V283": 0.6,
+                "V294": 0.7,
+                "addr1": 150,
+                "card1": 15000,
+                "card2": 226,
+                "card3": 150,
+                "card4": "visa",
+                "card5": 226,
+                "card6": "debit",
+                "DeviceInfo": "Windows Chrome",
+                "P_emaildomain": "gmail.com",
+                "R_emaildomain": "gmail.com",
+                "M4": "M0",
+                "M5": "M0"
+            }
+        ]
     )
 
 
 class ForwardResponse(BaseModel):
-    """Ответ с предсказаниями"""
-    success: bool = True
+    """
+    Схема для ответа с прогнозом модели
+
+    Используется: ответ POST /api/forward
+    Определяет структуру успешного ответа модели
+    """
+    success: bool = Field(
+        default=True,
+        description="Успешно ли выполнен запрос"
+    )
     prediction: int = Field(
         ...,
-        description="Предсказанный класс (0 или 1)",
         ge=0,
-        le=1
+        le=1,
+        description="Предсказание модели"
     )
     probability: float = Field(
         ...,
-        description="Вероятность положительного класса",
         ge=0.0,
-        le=1.0
+        le=1.0,
+        description="Вероятность положительного класса"
     )
 
 
-class HistoryItemBase(BaseModel):
+class HistoryItemResponse(BaseModel):
     """
-    Базовая схема для элемента истории (общие поля)
+    Схема для ответа с элементом истории
+
+    Используется: ответ GET /api/history
+    Возвращает поля из базы данных
     """
-    timestamp: datetime = Field(
+    id: int = Field(
         ...,
-        description="Временная метка запроса"
+        description="Уникальный идентификатор записи в базе данных"
     )
     request_data: Dict[str, Any] = Field(
         ...,
         description="Исходные данные запроса"
-    )
-    status_code: int = Field(
-        ...,
-        description="HTTP статус код"
-    )
-
-
-class HistoryItemCreate(HistoryItemBase):
-    """
-    Схема для создания записи истории (из middleware)
-    Используется при сохранении результатов предсказания в БД
-    """
-    prediction: Optional[int] = Field(
-        None,
-        ge=0,
-        le=1,
-        description="Предсказание модели (0 или 1)"
-    )
-    probability: Optional[float] = Field(
-        None,
-        ge=0.0,
-        le=1.0,
-        description="Вероятность предсказания"
-    )
-    error_message: Optional[str] = Field(
-        None,
-        description="Сообщение об ошибке (если есть)"
-    )
-    client_ip: Optional[str] = Field(
-        None,
-        description="IP адрес клиента"
-    )
-    model_version: Optional[str] = Field(
-        "1.0.0",
-        description="Версия модели"
-    )
-    processing_time: Optional[float] = Field(
-        None,
-        ge=0.0,
-        description="Время обработки в секундах"
-    )
-
-
-class HistoryItemResponse(HistoryItemBase):
-    """
-    Схема для ответа элемента истории (вывод API)
-    Используется в: ответ GET /api/history
-    """
-    id: int = Field(
-        ...,
-        description="ID записи"
     )
     prediction: Optional[int] = Field(
         None,
@@ -99,89 +108,43 @@ class HistoryItemResponse(HistoryItemBase):
     )
     probability: Optional[float] = Field(
         None,
-        description="Вероятность предсказания"
-    )
-    error_message: Optional[str] = Field(
-        None,
-        description="Сообщение об ошибке"
-    )
-    client_ip: Optional[str] = Field(
-        None,
-        description="IP клиента"
-    )
-    model_version: Optional[str] = Field(
-        "1.0.0",
-        description="Версия модели"
+        description="Вероятность положительного класса"
     )
     processing_time: Optional[float] = Field(
         None,
-        description="Время обработки"
+        description="Время обработки запроса в секундах"
     )
 
-    # Настроить Pydantic для работы с SQLAlchemy моделями
+    # Конфигурация для работы с SQLAlchemy моделями
     model_config = ConfigDict(from_attributes=True)
-
-
-class HistoryResponse(BaseModel):
-    """
-    Схема для ответа списка истории
-    Используется в: ответ GET /api/history
-    """
-    items: List[HistoryItemResponse] = Field(
-        ...,
-        description="List of history records / Список записей истории"
-    )
-    total: int = Field(
-        ...,
-        ge=0,
-        description="Total number of records / Общее количество записей"
-    )
-    page: int = Field(
-        ...,
-        ge=1,
-        description="Current page number / Номер текущей страницы"
-    )
-    limit: int = Field(
-        ...,
-        ge=1,
-        le=100,
-        description="Number of items per page / Количество элементов на странице"
-    )
-    total_pages: int = Field(
-        ...,
-        ge=0,
-        description="Total number of pages / Общее количество страниц"
-    )
 
 
 class HistoryStatsResponse(BaseModel):
     """
-    Схема для ответа статистики истории
-    Используется в: ответ GET /api/history/stats
+    Схема для статистики истории
+
+    Используется: ответ GET /api/history/stats
+    Содержит агрегированные данные по всем запросам
     """
     total_requests: int = Field(
         ...,
-        description="Общее количество запросов"
+        ge=0,
+        description="Общее количество обработанных запросов"
     )
-    successful_requests: int = Field(
-        ...,
-        description="Количество успешных запросов (статус 200)"
-    )
-    failed_requests: int = Field(
-        ...,
-        description="Количество неудачных запросов (статус >= 400)"
-    )
-    success_rate: float = Field(
-        ...,
+    average_prediction: Optional[float] = Field(
+        None,
         ge=0.0,
         le=1.0,
-        description="Уровень успеха (от 0.0 до 1.0)"
+        description="Среднее значение предсказаний (от 0.0 до 1.0)"
+    )
+    average_probability: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Средняя вероятность положительного класса (от 0.0 до 1.0)"
     )
     average_processing_time: Optional[float] = Field(
         None,
-        description="Среднее время обработки в секундах"
-    )
-    last_24_hours: int = Field(
-        ...,
-        description="Запросы за последние 24 часа"
+        ge=0.0,
+        description="Среднее время обработки запроса в секундах"
     )

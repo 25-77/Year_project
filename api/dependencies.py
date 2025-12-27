@@ -1,5 +1,3 @@
-# Загрузка модели и конфигов
-
 import yaml
 from catboost import CatBoostClassifier
 from pathlib import Path

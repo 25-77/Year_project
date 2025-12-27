@@ -15,8 +15,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncEngine
 )
-from sqlalchemy import select
-from .models import Base, PredictionHistory
+from .models import Base
 
 
 # Асинхронная строка подключения SQLite
@@ -74,39 +73,3 @@ async def init_db() -> None:
     async with engine.begin() as conn:
         # Создать все таблицы
         await conn.run_sync(Base.metadata.create_all)
-
-
-async def get_history_count(db: AsyncSession) -> int:
-    """
-    Получить общее количество записей истории
-
-    Паттерн SQLAlchemy 2.0:
-    - Использовать execute() с select() и count()
-    """
-    from sqlalchemy import func
-    result = await db.execute(
-        select(func.count(PredictionHistory.id))
-    )
-    return result.scalar_one()
-
-
-async def cleanup_old_records(db: AsyncSession, days_to_keep: int = 30) -> int:
-    """
-    Очистить старые записи истории
-
-    Удаляет записи старше указанного количества дней
-
-    Возвращает количество удаленных записей
-    """
-    from datetime import datetime, timedelta
-    from sqlalchemy import delete
-
-    cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
-
-    result = await db.execute(
-        delete(PredictionHistory)
-        .where(PredictionHistory.timestamp < cutoff_date)
-    )
-
-    await db.commit()
-    return result.rowcount

@@ -1,3 +1,9 @@
+# Роутер для эндпоинта предсказаний модели
+# Этот роутер обрабатывает POST запросы для получения предсказаний
+
+# Ключевые эндпоинты:
+# - POST /forward - Получить предсказание для одного объекта
+
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Depends, status
 from api.dependencies import load_model, load_features_config
@@ -48,9 +54,9 @@ def validate_request_data(data, required_features):
 @router.post(
     "/forward",
     response_model=ForwardResponse,
-    summary="Получить предсказание для одного объекта",
+    summary="Формирование прогноза вероятности фрода",
     description="""
-    Принимает JSON с одним объектом и возвращает предсказание модели.
+    Принимает JSON с данными транзакции и формирует прогноз модели
 
     Формат запроса:
     {
@@ -58,11 +64,11 @@ def validate_request_data(data, required_features):
             "TransactionAmt": 189.0,
             "C1": 1.0,
             "C2": 2.0,
-            // ... все остальные признаки
+            // ... все остальные переменные
         }
     }
 
-    Все признаки из FINAL_FEATURES в features.yaml обязательны.
+    Все переменные из FINAL_FEATURES обязательны.
     """,
     responses={
         400: {"description": "Неверный формат данных"},
