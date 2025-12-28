@@ -1,8 +1,18 @@
+# Точка входа FastAPI приложения и управление жизненным циклом.
+
+# Этот файл определяет:
+# - Конфигурацию и создание FastAPI приложения
+# - Управление событиями запуска/остановки (lifespan)
+# - Регистрацию всех маршрутов (роутеров)
+# - Middleware для логирования
+
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, status
-from api.routers import forward, history
+
+from api.database import engine, init_db
 from api.middleware import PredictionHistoryMiddleware
-from api.database import init_db, engine
+from api.routers import forward, history
 
 
 @asynccontextmanager
@@ -87,8 +97,8 @@ async def health_check():
     }
 
 
-# Регистрируем роутер для прогнозов (существующий)
+# Регистрируем роутер для формирования прогноза
 app.include_router(forward.router, prefix="/api")
 
-# Регистрируем новый роутер для истории запросов
+# Регистрируем роутер для получения истории запросов
 app.include_router(history.router, prefix="/api")

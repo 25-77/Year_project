@@ -1,12 +1,12 @@
+# Загрузчики модели и переменных
+
 import yaml
 from catboost import CatBoostClassifier
 from pathlib import Path
-from functools import lru_cache
 
 BASE_DIR = Path(__file__).parent.parent
 
 
-@lru_cache()
 def load_model():
     """Загрузка CatBoost модели"""
     model_path = BASE_DIR / "models" / "final_model.cbm"
@@ -15,7 +15,6 @@ def load_model():
     return model
 
 
-@lru_cache()
 def load_features_config():
     """Загрузка списка переменных модели"""
     features_path = BASE_DIR / "models" / "params" / "features.yaml"

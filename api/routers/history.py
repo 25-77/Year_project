@@ -5,7 +5,6 @@
 # - GET /history -  Получить историю предсказаний
 # - GET /history/stats - Получить статистику
 
-
 from typing import List
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,7 +35,7 @@ async def get_history(
     db: AsyncSession = Depends(get_db)
 ) -> List[HistoryItemResponse]:
     try:
-        # Построить простой запрос - все записи отсортированные по дате
+        # Простой запрос - все записи отсортированные по id
         query = select(PredictionHistory).order_by(desc(PredictionHistory.id))
 
         # Выполнить запрос
@@ -53,13 +52,13 @@ async def get_history(
 
 
 @router.get(
-    "/stats", 
+    "/stats",
     response_model=HistoryStatsResponse,
     summary="Статистика запросов",
     description="""
     Возвращает основные статистики по запросам
 
-    Статистики: 
+    Статистики:
         - Кол-во запросов
         - Средний прогноз
         - Среднее время обработки запросов
@@ -67,35 +66,41 @@ async def get_history(
 async def get_history_stats(db: AsyncSession = Depends(get_db)):
     try:
         # Общее количество
-        total_result = await db.execute(select(func.count(PredictionHistory.id)))
+        total_result = await db.execute(
+            select(func.count(PredictionHistory.id))
+        )
         total = total_result.scalar_one()
-        
+
         # Среднее предсказание
         avg_pred_result = await db.execute(
             select(func.avg(PredictionHistory.prediction))
             .where(PredictionHistory.prediction.isnot(None))
         )
         avg_prediction = avg_pred_result.scalar_one()
-        
+
         # Средняя вероятность
         avg_prob_result = await db.execute(
             select(func.avg(PredictionHistory.probability))
             .where(PredictionHistory.probability.isnot(None))
         )
         avg_probability = avg_prob_result.scalar_one()
-        
+
         # Среднее время обработки
         avg_time_result = await db.execute(
             select(func.avg(PredictionHistory.processing_time))
             .where(PredictionHistory.processing_time.isnot(None))
         )
         avg_processing_time = avg_time_result.scalar_one()
-        
+
         return HistoryStatsResponse(
             total_requests=total,
             average_prediction=float(avg_prediction),
             average_probability=float(avg_probability),
             average_processing_time=float(avg_processing_time)
         )
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )

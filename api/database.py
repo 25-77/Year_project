@@ -1,4 +1,3 @@
-
 # Конфигурация базы данных и управление сессиями
 
 # Этот модуль обрабатывает:
@@ -16,7 +15,6 @@ from sqlalchemy.ext.asyncio import (
     AsyncEngine
 )
 from .models import Base
-
 
 # Асинхронная строка подключения SQLite
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +38,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-# ЗАВИСИМОСТЬ БАЗЫ ДАННЫХ
+# Зависимость БД
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Зависимость, предоставляющая сессию базы данных
@@ -64,7 +62,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-# ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ
+# Инициализация БД
 async def init_db() -> None:
     """
     Инициализировать таблицы базы данных
