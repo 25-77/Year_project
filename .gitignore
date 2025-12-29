@@ -4,7 +4,6 @@ data/**/*.pqt
 data/**/*.parquet
 data/**/*.csv
 data/**/*.xlsx
-additional_analytics/*
 
 =======
 # Byte-compiled / optimized / DLL files

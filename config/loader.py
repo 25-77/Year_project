@@ -12,11 +12,11 @@ def get_settings(config_dir: Optional[Path] = r'./configs') -> Settings:
     """Функция для получения конфига"""
 
     if isinstance(config_dir, str):
-        config_dir = Path(config_dir)
+        config_dir = Path(config_dir) 
 
     if not os.path.exists(config_dir):
         raise FileNotFoundError(f"Путь \"{config_dir}\" не существует!")
-
+    
     configs = {}
 
     # Добавляем все .yaml файлы в единый конфинг
@@ -47,3 +47,8 @@ def _replace_to_env_vars(cfg: dict) -> dict:
             _replace_to_env_vars(v)
 
     return cfg
+
+
+
+
+
