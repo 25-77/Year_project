@@ -63,10 +63,10 @@ class MetricCalculator:
 
         if len(kept.columns) == 0:
             return stacked.reset_index()
-
+        
         # return pd.concat([stacked, kept], axis=1).reset_index()
         return stacked.join(kept).reset_index()
-
+    
 
 
     def _set_metr_funcs(self, data: pd.DataFrame, pred_cols: List[str]) -> dict:
@@ -98,9 +98,9 @@ class MetricCalculator:
             ]
 
         return agg_funcs
-
+    
     def calculate(
-        self,
+        self, 
         data: pd.DataFrame,
         true_col: str,
         pred_cols: List[str] | str,
@@ -148,7 +148,7 @@ class MetricCalculator:
         # Конвертируем pred_cols в список, если это строка
         pred_cols = [pred_cols] if isinstance(pred_cols, str) else pred_cols
         agg_funcs = self._set_metr_funcs(data, pred_cols)
-
+    
         result = data.groupby(group_cols).agg(agg_funcs)
 
         if groupby_exclude_combinations is not None:
@@ -170,13 +170,13 @@ class MetricCalculator:
 
                 result_temp = result_temp.reset_index().set_index(group_cols)
                 result = pd.concat([result, result_temp], axis=0)
-
+        
         # Красивый вывод, если была задействована одна функция
         if pretify_one_func and len(self.metr_funcs) == 1:
-
+            
             result.columns = pred_cols + [*(self.stats_funcs or {})]
             return result.reset_index()
-
+        
         result = self._partial_stack(result, pred_cols, group_cols)
 
         return result
