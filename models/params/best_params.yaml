@@ -1,0 +1,9 @@
+colsample_bylevel: 0.0638792635777333
+depth: 7
+early_stopping_rounds: 20
+eval_metric: AUC
+iterations: 250
+learning_rate: 0.1205712628744377
+loss_function: Logloss
+random_seed: 42
+verbose: 0
