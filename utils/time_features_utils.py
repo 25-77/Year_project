@@ -17,7 +17,7 @@ def make_time_window_features(data, group_col='card1'):
     
     """
     
-    data = data.sort_values([group_col, 'TransactionDT']).reset_index(drop=True)
+    data = data.sort_values([group_col, 'TransactionDT'])
 
     # 
     windows = [1, 6, 24, 72, 168]
