@@ -73,3 +73,29 @@ CatBoost показал наилучший результат не только 
 <img src="../docs/screens/roc_auc.png" width="310">
 
 <img src="../docs/screens/roc_auc_month.png" style="width: 600px; height: auto;">
+
+
+
+## Анализ финальных переменных
+
+<span style="color: orange;">**SHAP-values**</span>:
+
+<img src="../docs/screens/shap.png" style="width: 600px; height: auto;">
+
+
+
+Метрики CatBoost модели, взятые из предыдущего чекпоинта без генерации дополнительных фичей:
+<img src="../docs/screens/old_metrics.png" style="width: 600px; height: auto;">
+
+Прирост метрики качества **ROC-AUC** составил порядка 9-10 п.п на периоде **TRAIN** и **TEST**, на **OOT** - на 4 п.п
+
+Список новых переменных, зашедших в модель:
+- amt_max_24h
+- count_168h
+- card_addr1_pair
+- card_email_p
+- card_email_r
+- card6_new
+- M5_new
+- P_emaildomain_new
+- card_unique_R_email
