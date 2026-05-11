@@ -30,9 +30,7 @@ dependencies = [
         "aiosqlite (>=0.22.1,<0.23.0)",
         "xgboost (>=1.7.0)",
         "lightgbm (>=4.6.0,<5.0.0)",
-        "keras (>=3.14.1,<4.0.0)",
-        "tensorflow (>=2.21.0,<3.0.0)",
-        "keras-preprocessing (>=1.1.2,<2.0.0)"
+        "tensorflow (>=2.21.0,<3.0.0)"
 
 ]
 
