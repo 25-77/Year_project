@@ -6,6 +6,8 @@ data/**/*.csv
 data/**/*.xlsx
 additional_analytics/*
 
+!data/model_preds/**/*.pqt
+
 =======
 # Byte-compiled / optimized / DLL files
 __pycache__/
