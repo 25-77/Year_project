@@ -8,7 +8,12 @@ additional_analytics/*
 
 !data/model_preds/**/*.pqt
 
-=======
+# MLflow / MinIO (локальные артефакты docker-compose)
+data/mlflow/
+data/mlflow_data/
+data/minio_data/
+reports/mlflow_artifacts/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -71,7 +76,7 @@ docs/_build/
 target/
 
 # DotEnv configuration
-.env
+# .env
 
 # Database
 *.db
